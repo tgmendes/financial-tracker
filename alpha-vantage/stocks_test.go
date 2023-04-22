@@ -1,4 +1,33 @@
-{
+package alphavantage
+
+import (
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
+func TestApiResponse(t *testing.T) {
+	sample := getTestData()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write(sample)
+	}))
+	defer srv.Close()
+
+	cl := NewClient(srv.URL, "some-key")
+	ts, err := cl.DailyAdjusted("test", "compact")
+	require.NoError(t, err)
+
+	_, ok := ts.TimeSeries["2023-04-21"]
+	assert.True(t, ok)
+	assert.Equal(t, "IBM", ts.Metadata.Symbol)
+}
+
+func getTestData() []byte {
+	testData := `
+	{
   "Meta Data": {
     "1. Information": "Daily Time Series with Splits and Dividend Events",
     "2. Symbol": "IBM",
@@ -28,4 +57,7 @@
       "8. split coefficient": "1.0"
     }
   }
+}
+`
+	return []byte(testData)
 }
