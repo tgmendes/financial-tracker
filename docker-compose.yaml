@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  grafana:
+    image: grafana/grafana-oss
+    ports:
+      - '3000:3000'
+
+  timescaledb:
+    image: timescale/timescaledb-ha:pg14-latest
+    ports:
+      - '5430:5432'
+    environment:
+      - POSTGRES_USER=itracker
+      - POSTGRES_DB=itracker
+      - POSTGRES_PASSWORD=stony_cyclable_adequacy
