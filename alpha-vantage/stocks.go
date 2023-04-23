@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 )
 
 var (
@@ -14,9 +15,12 @@ var (
 	}
 )
 
+var ErrTooManyRequests = errors.New("too many API requests")
+
 type TimeSeriesResponse struct {
 	Metadata   Metadata              `json:"Meta Data"`
 	TimeSeries map[string]TimeSeries `json:"Time Series (Daily)"`
+	Note       string                `json:"Note,omitempty"`
 }
 
 type Metadata struct {
@@ -33,7 +37,7 @@ type TimeSeries struct {
 	Low              float64 `json:"3. low,string,omitempty"`
 	Close            float64 `json:"4. close,string,omitempty"`
 	AdjustedClose    float64 `json:"5. adjusted close,string,omitempty"`
-	Volume           float64 `json:"6. volume,string,omitempty"`
+	Volume           int64   `json:"6. volume,string,omitempty"`
 	DividendAmount   float64 `json:"7. dividend amount,string,omitempty"`
 	SplitCoefficient float64 `json:"8. split coefficient,string,omitempty"`
 }
@@ -58,6 +62,10 @@ func (c *Client) DailyAdjusted(symbol, outputSize string) (*TimeSeriesResponse, 
 
 	if err := json.NewDecoder(resp.Body).Decode(&ts); err != nil {
 		return nil, fmt.Errorf("parsing daily adjusted series: %w", err)
+	}
+
+	if strings.Contains(ts.Note, "Thank you for using Alpha Vantage!") {
+		return nil, ErrTooManyRequests
 	}
 
 	return &ts, nil

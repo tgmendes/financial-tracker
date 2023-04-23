@@ -1,17 +1,21 @@
 schema "public" {
 }
 
-table "sensors" {
+table "symbols" {
   schema = schema.public
   column "id" {
     null = false
-    type = serial
+    type = varchar(50)
   }
   column "type" {
+    null = false
+    type = varchar(50)
+  }
+  column "name" {
     null = true
     type = varchar(50)
   }
-  column "location" {
+  column "exchange" {
     null = true
     type = varchar(50)
   }
@@ -20,26 +24,57 @@ table "sensors" {
   }
 }
 
-table "sensor_data" {
+table "stock_data" {
   schema = schema.public
   column "time" {
     null = false
     type = timestamptz
   }
-  column "sensor_id" {
-    null = true
-    type = integer
+  column "symbol_id" {
+    null = false
+    type = varchar(50)
   }
-  column "temperature" {
+  column "open" {
+    null = true
+    type = decimal(20,5)
+  }
+  column "high" {
+    null = true
+    type = decimal(20,5)
+  }
+  column "low" {
+    null = true
+    type = decimal(20,5)
+  }
+  column "close" {
+    null = true
+    type = decimal(20,5)
+  }
+  column "adjusted_close" {
+    null = true
+    type = decimal(20,5)
+  }
+  column "volume" {
+    null = true
+    type = bigint
+  }
+  column "dividend_amount" {
+    null = true
+    type = decimal(20,5)
+  }
+  column "split_coefficient" {
     null = true
     type = double_precision
   }
-  column "cpu" {
-    null = true
-    type = double_precision
+  foreign_key "symbol_id" {
+    columns     = [column.symbol_id]
+    ref_columns = [table.symbols.column.id]
   }
-  foreign_key "sensor_id" {
-    columns     = [column.sensor_id]
-    ref_columns = [table.sensors.column.id]
+  index "time_symbol_idx" {
+    columns = [
+      column.symbol_id,
+      column.time
+    ]
+    unique = true
   }
 }

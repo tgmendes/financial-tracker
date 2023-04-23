@@ -1,6 +1,7 @@
 package alphavantage
 
 import (
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -23,6 +24,24 @@ func TestApiResponse(t *testing.T) {
 	_, ok := ts.TimeSeries["2023-04-21"]
 	assert.True(t, ok)
 	assert.Equal(t, "IBM", ts.Metadata.Symbol)
+}
+
+func TestRateLimitReached(t *testing.T) {
+	jsonResp := `
+{
+    "Note": "Thank you for using Alpha Vantage! Our standard API call frequency is 5 calls per minute and 500 calls per day. Please visit https://www.alphavantage.co/premium/ if you would like to target a higher API call frequency."
+}
+`
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(jsonResp))
+	}))
+	defer srv.Close()
+
+	cl := NewClient(srv.URL, "some-key")
+	ts, err := cl.DailyAdjusted("test", "compact")
+	assert.Error(t, err)
+	assert.True(t, errors.Is(err, ErrTooManyRequests))
+	assert.Nil(t, ts)
 }
 
 func getTestData() []byte {

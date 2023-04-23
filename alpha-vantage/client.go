@@ -39,7 +39,6 @@ func (c *Client) Do(queryParams url.Values) (*http.Response, error) {
 
 	req.Header.Set("Accept", "application/json; charset=utf-8")
 	req.URL.RawQuery = queryParams.Encode()
-	fmt.Println(req.URL.String())
 
 	resp, err := c.http.Do(req)
 	if err != nil {

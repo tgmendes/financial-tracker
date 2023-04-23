@@ -1,0 +1,31 @@
+# We're using pgx instead of sql as a package for SQL because it has
+# more advanced features (such as using Postgres DSN) and it is supposedly
+# faster (https://www.reddit.com/r/golang/comments/iedksn/postgresql_pgx_vs_databasesql/).
+# At the time of writing, v5 is experimental so we're not using it yet.
+version: "2"
+overrides:
+  go:
+    overrides:
+      # Without this override, Null text will be treated as sql.NullString, which is harder to work with.
+      # This treats nullable strings as pointers.
+      - db_type: "text"
+        nullable: true
+        go_type:
+          type: "string"
+          pointer: true
+      - db_type: "pg_catalog.timestamp"
+        nullable: true
+        go_type:
+          import: "time"
+          type: "Time"
+          pointer: true
+
+sql:
+  - engine: "postgresql"
+    queries: "./dao/sql"
+    schema: "./db/schema.sql"
+    gen:
+      go:
+        package: "dao"
+        out: "dao"
+        sql_package: "pgx/v5"
