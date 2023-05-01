@@ -23,7 +23,7 @@ overrides:
 sql:
   - engine: "postgresql"
     queries: "./dao/sql"
-    schema: "./db/schema.sql"
+    schema: "./db/sql/schema.sql"
     gen:
       go:
         package: "dao"

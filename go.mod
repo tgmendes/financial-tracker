@@ -3,10 +3,12 @@ module github.com/tgmendes/financial-tracker
 go 1.20
 
 require (
+	github.com/go-chi/chi/v5 v5.0.8
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/joho/godotenv v1.5.1
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.8.1
+	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
 	golang.org/x/time v0.3.0
 )
 

@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	alphavantage2 "github.com/tgmendes/financial-tracker/pkg/alpha-vantage"
+	dao2 "github.com/tgmendes/financial-tracker/pkg/dao"
+	"github.com/tgmendes/financial-tracker/pkg/marshal"
 	"golang.org/x/time/rate"
 	"time"
-
-	alphavantage "github.com/tgmendes/financial-tracker/alpha-vantage"
-	"github.com/tgmendes/financial-tracker/dao"
-	"github.com/tgmendes/financial-tracker/marshal"
 )
 
 const (
@@ -20,14 +19,14 @@ const (
 )
 
 type StockFetcher struct {
-	avClient     *alphavantage.Client
-	q            *dao.Queries
+	avClient     *alphavantage2.Client
+	q            *dao2.Queries
 	burstLimiter *rate.Limiter
 	dailyLimiter *rate.Limiter
 }
 
-func NewStockFetcher(avApiKey string, q *dao.Queries) *StockFetcher {
-	client := alphavantage.NewClient(alphavantage.BASE_URL, avApiKey)
+func NewStockFetcher(avApiKey string, q *dao2.Queries) *StockFetcher {
+	client := alphavantage2.NewClient(alphavantage2.BASE_URL, avApiKey)
 
 	return &StockFetcher{
 		avClient:     client,
@@ -69,7 +68,7 @@ func (s *StockFetcher) AllTimeData(ctx context.Context) error {
 		symbols = symbols[1:]
 
 		ts, err := s.avClient.DailyAdjusted(sym, "full")
-		if errors.Is(err, alphavantage.ErrTooManyRequests) {
+		if errors.Is(err, alphavantage2.ErrTooManyRequests) {
 			symbols = append(symbols, sym)
 			rateErrCount += 1
 			continue
@@ -120,7 +119,7 @@ func (s *StockFetcher) SeedAllTimeData(ctx context.Context) error {
 		symbols = symbols[1:]
 
 		ts, err := s.avClient.DailyAdjusted(sym, "full")
-		if errors.Is(err, alphavantage.ErrTooManyRequests) {
+		if errors.Is(err, alphavantage2.ErrTooManyRequests) {
 			symbols = append(symbols, sym)
 			rateErrCount += 1
 			continue
@@ -139,8 +138,8 @@ func (s *StockFetcher) SeedAllTimeData(ctx context.Context) error {
 	return nil
 }
 
-func (s *StockFetcher) storeTSData(ctx context.Context, ts *alphavantage.TimeSeriesResponse) error {
-	sdParams := make([]dao.CreateStockDataParams, len(ts.TimeSeries))
+func (s *StockFetcher) storeTSData(ctx context.Context, ts *alphavantage2.TimeSeriesResponse) error {
+	sdParams := make([]dao2.CreateStockDataParams, len(ts.TimeSeries))
 	idx := 0
 	for timestamp, row := range ts.TimeSeries {
 		data, err := marshal.AVtoDAOTimeseries(row, timestamp, ts.Metadata.Symbol)
@@ -159,8 +158,8 @@ func (s *StockFetcher) storeTSData(ctx context.Context, ts *alphavantage.TimeSer
 	return nil
 }
 
-func (s *StockFetcher) batchStoreTSData(ctx context.Context, ts *alphavantage.TimeSeriesResponse) error {
-	sdParams := make([]dao.BatchCreateStockDataParams, len(ts.TimeSeries))
+func (s *StockFetcher) batchStoreTSData(ctx context.Context, ts *alphavantage2.TimeSeriesResponse) error {
+	sdParams := make([]dao2.BatchCreateStockDataParams, len(ts.TimeSeries))
 	idx := 0
 	for timestamp, row := range ts.TimeSeries {
 		data, err := marshal.AVtoBatchDAOTimeseries(row, timestamp, ts.Metadata.Symbol)

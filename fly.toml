@@ -1,0 +1,32 @@
+# fly.toml app configuration file generated for fin-tracker on 2023-05-01T12:38:11+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "fin-tracker"
+primary_region = "lhr"
+
+[[services]]
+processes = ["admin"]
+internal_port = 8080
+protocol = "tcp"
+
+[[services.ports]]
+port = 80
+handlers = ["http"]
+
+[[services.ports]]
+port = 443
+handlers = ["tls", "http"]
+
+[services.concurrency]
+hard_limit = 25
+soft_limit = 20
+
+[[services.tcp_checks]]
+interval = "10s"
+timeout = "2s"
+
+[processes]
+admin = "/fin-admin"
+cron = "supercronic /crontab"

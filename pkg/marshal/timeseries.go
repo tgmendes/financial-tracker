@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/shopspring/decimal"
-	alphavantage "github.com/tgmendes/financial-tracker/alpha-vantage"
-	"github.com/tgmendes/financial-tracker/dao"
+	"github.com/tgmendes/financial-tracker/pkg/alpha-vantage"
+	dao2 "github.com/tgmendes/financial-tracker/pkg/dao"
 	"time"
 )
 
-func AVtoDAOTimeseries(data alphavantage.TimeSeries, timestamp, symbolID string) (dao.CreateStockDataParams, error) {
+func AVtoDAOTimeseries(data alphavantage.TimeSeries, timestamp, symbolID string) (dao2.CreateStockDataParams, error) {
 	tsTime, err := time.Parse("2006-01-02", timestamp)
 	if err != nil {
-		return dao.CreateStockDataParams{}, fmt.Errorf("unable to parse time: %w", err)
+		return dao2.CreateStockDataParams{}, fmt.Errorf("unable to parse time: %w", err)
 	}
 
 	open := decimal.NewFromFloat(data.Open)
@@ -22,7 +22,7 @@ func AVtoDAOTimeseries(data alphavantage.TimeSeries, timestamp, symbolID string)
 	adjustedClose := decimal.NewFromFloat(data.AdjustedClose)
 	dividendAmt := decimal.NewFromFloat(data.DividendAmount)
 
-	return dao.CreateStockDataParams{
+	return dao2.CreateStockDataParams{
 		Time: pgtype.Timestamptz{
 			Time:  tsTime,
 			Valid: true,
@@ -69,10 +69,10 @@ func AVtoDAOTimeseries(data alphavantage.TimeSeries, timestamp, symbolID string)
 	}, nil
 }
 
-func AVtoBatchDAOTimeseries(data alphavantage.TimeSeries, timestamp, symbolID string) (dao.BatchCreateStockDataParams, error) {
+func AVtoBatchDAOTimeseries(data alphavantage.TimeSeries, timestamp, symbolID string) (dao2.BatchCreateStockDataParams, error) {
 	tsTime, err := time.Parse("2006-01-02", timestamp)
 	if err != nil {
-		return dao.BatchCreateStockDataParams{}, fmt.Errorf("unable to parse time: %w", err)
+		return dao2.BatchCreateStockDataParams{}, fmt.Errorf("unable to parse time: %w", err)
 	}
 
 	open := decimal.NewFromFloat(data.Open)
@@ -82,7 +82,7 @@ func AVtoBatchDAOTimeseries(data alphavantage.TimeSeries, timestamp, symbolID st
 	adjustedClose := decimal.NewFromFloat(data.AdjustedClose)
 	dividendAmt := decimal.NewFromFloat(data.DividendAmount)
 
-	return dao.BatchCreateStockDataParams{
+	return dao2.BatchCreateStockDataParams{
 		Time: pgtype.Timestamptz{
 			Time:  tsTime,
 			Valid: true,

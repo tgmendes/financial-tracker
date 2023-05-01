@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
-	"github.com/tgmendes/financial-tracker/dao"
-	"github.com/tgmendes/financial-tracker/handler"
+	"github.com/tgmendes/financial-tracker/pkg/dao"
+	"github.com/tgmendes/financial-tracker/pkg/handler"
 	"os"
 )
 
