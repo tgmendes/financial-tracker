@@ -30,3 +30,6 @@ timeout = "2s"
 [processes]
 admin = "/fin-admin"
 cron = "supercronic /crontab"
+
+[deploy]
+release_command = "sh -c '/atlas schema apply --var db_url=$DATABASE_URL --env fly --schema public --auto-approve'"

@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tgmendes/financial-tracker/pkg/dao"
-	"github.com/tgmendes/financial-tracker/pkg/handler"
 	"golang.org/x/exp/slog"
 	"os"
 )
@@ -13,11 +13,6 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout))
 
 	connStr := os.Getenv("DATABASE_URL")
-	apiKey := os.Getenv("AV_API_KEY")
-
-	if apiKey == "" {
-		logger.Error("Alpha Vantage API key not found")
-	}
 
 	if connStr == "" {
 		logger.Error("DB URL not set")
@@ -34,10 +29,15 @@ func main() {
 
 	q := dao.New(dbpool)
 
-	h := handler.NewStockFetcher(apiKey, q, logger)
-	err = h.AllTimeData(ctx)
+	_, err = q.CreateSymbol(ctx, dao.CreateSymbolParams{
+		ID:       "VWRL.L",
+		Type:     "ETF",
+		Name:     pgtype.Text{String: "Vanguard FTSE All-World UCITS ETF", Valid: true},
+		Exchange: pgtype.Text{String: "LSE", Valid: true},
+	})
 	if err != nil {
-		logger.Error("unable to collect data", "error", err)
+		logger.Error("unable to create symbol", "error", err)
 		os.Exit(1)
 	}
+
 }

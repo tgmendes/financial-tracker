@@ -7,6 +7,7 @@ import (
 	alphavantage2 "github.com/tgmendes/financial-tracker/pkg/alpha-vantage"
 	dao2 "github.com/tgmendes/financial-tracker/pkg/dao"
 	"github.com/tgmendes/financial-tracker/pkg/marshal"
+	"golang.org/x/exp/slog"
 	"golang.org/x/time/rate"
 	"time"
 )
@@ -21,16 +22,18 @@ const (
 type StockFetcher struct {
 	avClient     *alphavantage2.Client
 	q            *dao2.Queries
+	logger       *slog.Logger
 	burstLimiter *rate.Limiter
 	dailyLimiter *rate.Limiter
 }
 
-func NewStockFetcher(avApiKey string, q *dao2.Queries) *StockFetcher {
+func NewStockFetcher(avApiKey string, q *dao2.Queries, log *slog.Logger) *StockFetcher {
 	client := alphavantage2.NewClient(alphavantage2.BASE_URL, avApiKey)
 
 	return &StockFetcher{
 		avClient:     client,
 		q:            q,
+		logger:       log,
 		burstLimiter: rate.NewLimiter(rate.Every(rpsLimit), rpsBurst),
 		dailyLimiter: rate.NewLimiter(rate.Every(24*time.Hour), dailyLimit),
 	}
@@ -67,7 +70,7 @@ func (s *StockFetcher) AllTimeData(ctx context.Context) error {
 		sym := symbols[0]
 		symbols = symbols[1:]
 
-		ts, err := s.avClient.DailyAdjusted(sym, "full")
+		ts, err := s.avClient.DailyAdjusted(sym, "compact")
 		if errors.Is(err, alphavantage2.ErrTooManyRequests) {
 			symbols = append(symbols, sym)
 			rateErrCount += 1
@@ -118,7 +121,7 @@ func (s *StockFetcher) SeedAllTimeData(ctx context.Context) error {
 		sym := symbols[0]
 		symbols = symbols[1:]
 
-		ts, err := s.avClient.DailyAdjusted(sym, "full")
+		ts, err := s.avClient.DailyAdjusted(sym, "compact")
 		if errors.Is(err, alphavantage2.ErrTooManyRequests) {
 			symbols = append(symbols, sym)
 			rateErrCount += 1

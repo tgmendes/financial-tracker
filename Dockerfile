@@ -11,17 +11,14 @@ RUN go mod download
 COPY ./pkg /build/pkg
 COPY cmd/collector/main.go /build/collector/main.go
 COPY cmd/admin/main.go /build/admin/main.go
+COPY cmd/cli/main.go /build/cli/main.go
 
 RUN CGO_ENABLED=0 go build -o fin-collector collector/main.go
 RUN CGO_ENABLED=0 go build -o fin-admin admin/main.go
+RUN CGO_ENABLED=0 go build -o fin-cli cli/main.go
 
 # runtime stage
 FROM alpine
-COPY --from=atlas /atlas /atlas
-COPY db /db
-
-COPY --from=build /build/fin-collector /fin-collector
-COPY --from=build /build/fin-admin /fin-admin
 
 # Latest releases available at https://github.com/aptible/supercronic/releases
 ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.2.24/supercronic-linux-amd64 \
@@ -35,6 +32,12 @@ RUN apk add --update --no-cache ca-certificates curl \
      && mv "$SUPERCRONIC" "/usr/local/bin/${SUPERCRONIC}" \
      && ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
 
+COPY --from=atlas /atlas /atlas
+COPY --from=build /build/fin-collector /fin-collector
+COPY --from=build /build/fin-admin /fin-admin
+COPY --from=build /build/fin-cli /fin-cli
+
+COPY db /db
 COPY crontab ./crontab
 COPY atlas.hcl ./atlas.hcl
 

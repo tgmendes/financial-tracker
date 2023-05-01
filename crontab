@@ -1,1 +1,1 @@
-*/1 * * * * /fin-collector
+0 20 * * * /fin-collector

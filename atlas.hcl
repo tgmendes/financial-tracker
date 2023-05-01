@@ -12,3 +12,14 @@ env "local" {
   // See: https://atlasgo.io/concepts/dev-database
   dev = "docker://postgres/15"
 }
+
+variable "db_url" {
+  type = string
+  default = ""
+}
+
+env "fly" {
+  src = "./db/schema.hcl"
+
+  url = "${var.db_url}"
+}
